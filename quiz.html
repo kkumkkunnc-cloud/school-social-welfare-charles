@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -64,7 +64,7 @@
         if (picked === question.answer) wrong.delete(question.id); else wrong.add(question.id);
         progress.wrongQuestions = [...wrong];
         save();
-        document.getElementById('feedback').innerHTML = picked === question.answer ? `<strong>\uc815\ub2f5\uc785\ub2c8\ub2e4.</strong><p>${question.explanation}</p>` : `<strong>\ub2e4\uc2dc \ud655\uc778\ud574\ubd05\uc2dc\ub2e4.</strong><p>${question.explanation}</p><p>${question.wrongExplanation}</p>`;
+        document.getElementById('feedback').innerHTML = `<strong>${picked === question.answer ? '\uc815\ub2f5\uc785\ub2c8\ub2e4.' : '\ub2e4\uc2dc \ud655\uc778\ud574\ubd05\uc2dc\ub2e4.'}</strong><p>${question.explanation}</p><p>${question.wrongExplanation}</p>`;
       }
       if (event.target.id === 'next') { index = (index + 1) % order.length; renderQuestion(); }
       if (event.target.id === 'prev') { index = (index - 1 + order.length) % order.length; renderQuestion(); }
@@ -76,3 +76,4 @@
   </script>
 </body>
 </html>
+
