@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -27,8 +27,11 @@
     const search = document.getElementById('search');
     let active = lectures[0]?.id || 1;
     const labelOf = (lecture) => lecture.label || `${lecture.id}\uac15`;
+    function plainText(value) {
+      return String(value || '').replace(/<[^>]+>/g, ' ');
+    }
     function keywordsFor(sub) {
-      const source = [sub.title, ...sub.points.slice(0, 2)].join(' ');
+      const source = plainText([sub.title, sub.paragraph || '', ...(sub.points || []).slice(0, 1)].join(' '));
       const words = source.split(/[\s,./()]+/).map((word) => word.replace(/["'.,!]/g, '')).filter((word) => word.length >= 2);
       return [...new Set(words)].slice(0, 3);
     }
@@ -40,11 +43,12 @@
       const lecture = lectures.find((item) => item.id === active);
       if (!lecture) return;
       const sections = lecture.sections.map((section) => {
-        const subtopics = section.subtopics.filter((sub) => !query || [section.title, sub.title, ...sub.points].join(' ').toLowerCase().includes(query));
+        const subtopics = section.subtopics.filter((sub) => !query || plainText([section.title, sub.title, sub.paragraph || '', ...(sub.points || [])].join(' ')).toLowerCase().includes(query));
         if (!subtopics.length) return '';
         return `<article class="concept-section"><h2>${section.title}</h2>${subtopics.map((sub) => {
           const keywords = keywordsFor(sub).map((word) => `<span>${word}</span>`).join('');
-          return `<details class="concept-card"><summary><span><strong>${sub.id}. ${sub.title}</strong><span class="keyword-row">${keywords}</span></span><em class="details-toggle"><span class="show-closed">\ud3bc\uce58\uae30</span><span class="show-open">\uc811\uae30</span></em></summary><ul>${sub.points.map((point) => `<li>${point}</li>`).join('')}</ul></details>`;
+          const paragraph = sub.paragraph || (sub.points || []).join(' ');
+          return `<details class="concept-card"><summary><span><strong>${sub.id}. ${sub.title}</strong><span class="keyword-row">${keywords}</span></span><em class="details-toggle"><span class="show-closed">\ud3bc\uce58\uae30</span><span class="show-open">\uc811\uae30</span></em></summary><p class="concept-paragraph">${paragraph}</p></details>`;
         }).join('')}</article>`;
       }).join('');
       list.innerHTML = sections || '<p class="empty">\uac80\uc0c9 \uacb0\uacfc\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.</p>';
@@ -62,3 +66,4 @@
   </script>
 </body>
 </html>
+
