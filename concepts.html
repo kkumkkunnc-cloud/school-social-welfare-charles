@@ -44,10 +44,10 @@
         if (!subtopics.length) return '';
         return `<article class="concept-section"><h2>${section.title}</h2>${subtopics.map((sub) => {
           const keywords = keywordsFor(sub).map((word) => `<span>${word}</span>`).join('');
-          return `<details class="concept-card"><summary><span><strong>${sub.id}. ${sub.title}</strong><span class="keyword-row">${keywords}</span></span><em>? ??</em></summary><ul>${sub.points.map((point) => `<li>${point}</li>`).join('')}</ul></details>`;
+          return `<details class="concept-card"><summary><span><strong>${sub.id}. ${sub.title}</strong><span class="keyword-row">${keywords}</span></span><em class="details-toggle"><span class="show-closed">\ud3bc\uce58\uae30</span><span class="show-open">\uc811\uae30</span></em></summary><ul>${sub.points.map((point) => `<li>${point}</li>`).join('')}</ul></details>`;
         }).join('')}</article>`;
       }).join('');
-      list.innerHTML = sections || '<p class="empty">?? ??? ????.</p>';
+      list.innerHTML = sections || '<p class="empty">\uac80\uc0c9 \uacb0\uacfc\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.</p>';
     }
     tabs.addEventListener('click', (event) => {
       const button = event.target.closest('button[data-id]');
