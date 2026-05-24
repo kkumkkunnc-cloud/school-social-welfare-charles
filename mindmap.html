@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>&#47560;&#51064;&#46300;&#47605; | &#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200;</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,7 +24,11 @@
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
   <script src="data.js"></script>
   <script>
-    const colors = d3.scaleOrdinal(d3.schemeTableau10.concat(d3.schemeSet3));
+    const colors = d3.scaleOrdinal([
+      '#256f75', '#b65f32', '#5f7f3f', '#8b5a9f', '#c77b30',
+      '#2f7d51', '#5b6fb3', '#b24a5a', '#4b8a8d', '#8a743a',
+      '#6f5aa8', '#d27d5a', '#3f7f6f', '#9a5f3f', '#557a9b'
+    ]);
     const rootData = {
       name: '\ud559\uad50\uc0ac\ud68c\ubcf5\uc9c0\ub860',
       depthType: 'root',
@@ -35,7 +42,10 @@
     const g = svg.append('g');
     const linkLayer = g.append('g').attr('class', 'links');
     const nodeLayer = g.append('g').attr('class', 'nodes');
+    const dx = 74;
+    const dy = 310;
     let root;
+
     function collapse(node) {
       if (node.children) {
         node._children = node.children;
@@ -43,49 +53,107 @@
         if (node.depth > 0) node.children = null;
       }
     }
+
+    function wrapText(text, width) {
+      text.each(function () {
+        const textNode = d3.select(this);
+        const words = textNode.text().split(/\s+/).reverse();
+        const lineHeight = 1.25;
+        const y = textNode.attr('y') || 0;
+        const x = textNode.attr('x') || 0;
+        let line = [];
+        let lineNumber = 0;
+        let word;
+        let tspan = textNode.text(null).append('tspan').attr('x', x).attr('y', y).attr('dy', '0em');
+        while ((word = words.pop())) {
+          line.push(word);
+          tspan.text(line.join(' '));
+          if (tspan.node().getComputedTextLength() > width && line.length > 1) {
+            line.pop();
+            tspan.text(line.join(' '));
+            line = [word];
+            tspan = textNode.append('tspan').attr('x', x).attr('y', y).attr('dy', `${++lineNumber * lineHeight}em`).text(word);
+          }
+        }
+      });
+    }
+
     function setup() {
       const rect = svg.node().getBoundingClientRect();
-      const width = Math.max(320, rect.width || window.innerWidth - 24);
-      const height = Math.max(560, window.innerHeight - 180);
-      svg.attr('viewBox', [0, 0, width, height]);
+      const width = Math.max(960, rect.width || window.innerWidth - 24);
+      const height = Math.max(720, window.innerHeight - 150);
+      svg.attr('viewBox', [0, 0, width, height]).attr('preserveAspectRatio', 'xMidYMid meet');
       root = d3.hierarchy(rootData);
       root.x0 = height / 2;
-      root.y0 = 0;
+      root.y0 = 120;
       root.children.forEach(collapse);
       update(root);
     }
+
     function update(source) {
       const rect = svg.node().getBoundingClientRect();
-      const width = Math.max(320, rect.width || window.innerWidth - 24);
-      const height = Math.max(560, window.innerHeight - 180);
-      const tree = d3.tree().nodeSize([42, Math.max(150, width / 4)]);
+      const width = Math.max(1120, rect.width || window.innerWidth - 24);
+      const height = Math.max(720, window.innerHeight - 150);
+      const tree = d3.tree().nodeSize([dx, dy]);
       tree(root);
       const nodes = root.descendants();
       const links = root.links();
       let left = root, right = root;
       root.eachBefore((node) => { if (node.x < left.x) left = node; if (node.x > right.x) right = node; });
-      const mapHeight = Math.max(height, right.x - left.x + 120);
-      svg.attr('viewBox', [-90, left.x - 60, width, mapHeight]);
+      const mapWidth = Math.max(width, d3.max(nodes, (node) => node.y) + 360);
+      const mapHeight = Math.max(height, right.x - left.x + 180);
+      const offsetX = 130;
+      svg.attr('viewBox', [0, left.x - 90, mapWidth, mapHeight]);
+
       const link = linkLayer.selectAll('path').data(links, (d) => d.target.data.name);
       link.join(
-        (enter) => enter.append('path').attr('d', () => d3.linkHorizontal().x(() => source.y0 || 0).y(() => source.x0 || 0)({source, target: source})),
+        (enter) => enter.append('path')
+          .attr('d', () => d3.linkHorizontal().x(() => (source.y0 || 0) + offsetX).y(() => source.x0 || 0)({source, target: source})),
         (update) => update,
         (exit) => exit.remove()
-      ).transition().duration(220).attr('d', d3.linkHorizontal().x((d) => d.y).y((d) => d.x));
+      ).transition().duration(260).attr('d', d3.linkHorizontal().x((d) => d.y + offsetX).y((d) => d.x));
+
       const node = nodeLayer.selectAll('g').data(nodes, (d) => d.data.name);
-      const entered = node.enter().append('g').attr('transform', () => `translate(${source.y0 || 0},${source.x0 || 0})`).attr('class', 'mind-node').on('click', (_, d) => {
+      node.exit().transition().duration(180).style('opacity', 0).remove();
+
+      const entered = node.enter().append('g')
+        .attr('transform', () => `translate(${(source.y0 || 0) + offsetX},${source.x0 || 0})`)
+        .attr('class', (d) => `mind-node depth-${d.depth}`)
+        .style('opacity', 0)
+        .on('click', (_, d) => {
         if (d.children) { d._children = d.children; d.children = null; }
         else { d.children = d._children; d._children = null; }
         update(d);
       });
-      entered.append('circle').attr('r', 1e-6);
-      entered.append('text').attr('dy', '0.32em').attr('x', (d) => d.depth === 0 ? 0 : 14).attr('text-anchor', (d) => d.depth === 0 ? 'middle' : 'start').text((d) => d.data.name);
+
+      entered.filter((d) => d.depth === 0).append('rect')
+        .attr('class', 'root-box')
+        .attr('x', -92).attr('y', -24).attr('width', 184).attr('height', 48).attr('rx', 24);
+      entered.filter((d) => d.depth === 1).append('rect')
+        .attr('class', 'lecture-box')
+        .attr('x', -8).attr('y', -27).attr('width', 238).attr('height', 54).attr('rx', 15);
+      entered.filter((d) => d.depth === 2).append('circle')
+        .attr('class', 'topic-dot')
+        .attr('r', 8);
+
+      entered.append('text')
+        .attr('class', 'mind-label')
+        .attr('x', (d) => d.depth === 0 ? 0 : d.depth === 1 ? 14 : 24)
+        .attr('y', (d) => d.depth === 1 ? -8 : 0)
+        .attr('text-anchor', (d) => d.depth === 0 ? 'middle' : 'start')
+        .attr('dominant-baseline', (d) => d.depth === 0 || d.depth === 2 ? 'middle' : 'auto')
+        .text((d) => d.data.name)
+        .each(function (d) { if (d.depth === 1) d3.select(this).call(wrapText, 190); });
+
       const merged = entered.merge(node);
-      merged.transition().duration(220).attr('transform', (d) => `translate(${d.y},${d.x})`);
-      merged.select('circle').transition().duration(220).attr('r', (d) => d.depth === 0 ? 11 : 8).attr('fill', (d) => d.data.color || '#2f6f73');
-      node.exit().remove();
+      merged.select('.lecture-box').attr('fill', (d) => d.data.color || '#2f6f73');
+      merged.select('.topic-dot').attr('fill', (d) => d.data.color || '#2f6f73');
+      merged.transition().duration(260)
+        .style('opacity', 1)
+        .attr('transform', (d) => `translate(${d.y + offsetX},${d.x})`);
       root.eachBefore((d) => { d.x0 = d.x; d.y0 = d.y; });
     }
+
     setup();
     window.addEventListener('resize', () => update(root));
   </script>
