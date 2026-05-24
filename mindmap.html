@@ -20,6 +20,12 @@
       <h1>&#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200; &#47560;&#51064;&#46300;&#47605;</h1>
     </section>
     <section class="mindmap-panel"><svg id="mindmap" role="img" aria-label="school social welfare mindmap"></svg></section>
+    <div class="mindmap-controls" aria-label="mindmap zoom controls">
+      <button type="button" id="zoom-in" aria-label="zoom in">+</button>
+      <button type="button" id="zoom-out" aria-label="zoom out">-</button>
+      <button type="button" id="zoom-home" aria-label="reset zoom">&#127968;</button>
+      <span id="zoom-percent">100%</span>
+    </div>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
   <script src="data.js"></script>
@@ -42,9 +48,17 @@
     const g = svg.append('g');
     const linkLayer = g.append('g').attr('class', 'links');
     const nodeLayer = g.append('g').attr('class', 'nodes');
+    const zoomPercent = document.getElementById('zoom-percent');
     const dx = 74;
     const dy = 310;
+    const zoom = d3.zoom()
+      .scaleExtent([0.45, 2.6])
+      .on('zoom', (event) => {
+        g.attr('transform', event.transform);
+        zoomPercent.textContent = `${Math.round(event.transform.k * 100)}%`;
+      });
     let root;
+    let homeTransform = d3.zoomIdentity;
 
     function collapse(node) {
       if (node.children) {
@@ -83,11 +97,13 @@
       const width = Math.max(960, rect.width || window.innerWidth - 24);
       const height = Math.max(720, window.innerHeight - 150);
       svg.attr('viewBox', [0, 0, width, height]).attr('preserveAspectRatio', 'xMidYMid meet');
+      svg.call(zoom).on('dblclick.zoom', null);
       root = d3.hierarchy(rootData);
       root.x0 = height / 2;
       root.y0 = 120;
       root.children.forEach(collapse);
       update(root);
+      resetZoom(0);
     }
 
     function update(source) {
@@ -104,6 +120,7 @@
       const mapHeight = Math.max(height, right.x - left.x + 180);
       const offsetX = 130;
       svg.attr('viewBox', [0, left.x - 90, mapWidth, mapHeight]);
+      homeTransform = d3.zoomIdentity.translate(0, 0).scale(1);
 
       const link = linkLayer.selectAll('path').data(links, (d) => d.target.data.name);
       link.join(
@@ -154,8 +171,19 @@
       root.eachBefore((d) => { d.x0 = d.x; d.y0 = d.y; });
     }
 
+    function zoomBy(factor) {
+      svg.transition().duration(180).call(zoom.scaleBy, factor);
+    }
+
+    function resetZoom(duration = 220) {
+      svg.transition().duration(duration).call(zoom.transform, homeTransform);
+    }
+
     setup();
     window.addEventListener('resize', () => update(root));
+    document.getElementById('zoom-in').addEventListener('click', () => zoomBy(1.2));
+    document.getElementById('zoom-out').addEventListener('click', () => zoomBy(0.82));
+    document.getElementById('zoom-home').addEventListener('click', () => resetZoom());
   </script>
 </body>
 </html>
