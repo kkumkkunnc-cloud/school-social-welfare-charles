@@ -26,12 +26,12 @@
     const mode = document.getElementById('mode');
     const card = document.getElementById('quiz-card');
     const reset = document.getElementById('reset-progress');
-    const labelById = new Map(lectures.map((lecture) => [lecture.id, lecture.label || `${lecture.id}?`]));
+    const labelById = new Map(lectures.map((lecture) => [lecture.id, lecture.label || `${lecture.id}\uac15`]));
     let index = 0;
     let order = [];
     let progress = JSON.parse(localStorage.getItem('schoolQuizProgress') || '{"solvedQuestions":[],"wrongQuestions":[]}');
     const save = () => localStorage.setItem('schoolQuizProgress', JSON.stringify(progress));
-    lectures.forEach((lecture) => filter.insertAdjacentHTML('beforeend', `<option value="${lecture.id}">${lecture.label || `${lecture.id}?`} ${lecture.title}</option>`));
+    lectures.forEach((lecture) => filter.insertAdjacentHTML('beforeend', `<option value="${lecture.id}">${lecture.label || `${lecture.id}\uac15`} ${lecture.title}</option>`));
     function shuffled(items) { return [...items].sort((a, b) => ((a.id * 37) % 101) - ((b.id * 37) % 101)); }
     function buildOrder() {
       let items = questions.filter((question) => filter.value === 'all' || String(question.lecture) === filter.value);
@@ -44,11 +44,11 @@
       renderQuestion();
     }
     function renderQuestion() {
-      if (!order.length) { card.innerHTML = '<p class="empty">??? ??? ????.</p>'; return; }
+      if (!order.length) { card.innerHTML = '<p class="empty">\ud45c\uc2dc\ud560 \ubb38\uc81c\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.</p>'; return; }
       const question = order[index];
       const solved = new Set(progress.solvedQuestions || []);
-      const lectureLabel = question.lectureLabel || labelById.get(question.lecture) || `${question.lecture}?`;
-      card.innerHTML = `<div class="quiz-meta"><span>${lectureLabel}</span><span>${question.source}</span><span>${index + 1} / ${order.length}</span></div><h2>${question.question}</h2><div class="options">${question.options.map((option, choiceIndex) => `<button type="button" data-choice="${choiceIndex}">${option}</button>`).join('')}</div><div class="feedback" id="feedback"></div><div class="quiz-actions"><button type="button" id="prev">??</button><button type="button" id="next">??</button></div><p class="solved-state">${solved.has(question.id) ? '?? ??' : '???'}</p>`;
+      const lectureLabel = question.lectureLabel || labelById.get(question.lecture) || `${question.lecture}\uac15`;
+      card.innerHTML = `<div class="quiz-meta"><span>${lectureLabel}</span><span>${question.source}</span><span>${index + 1} / ${order.length}</span></div><h2>${question.question}</h2><div class="options">${question.options.map((option, choiceIndex) => `<button type="button" data-choice="${choiceIndex}">${option}</button>`).join('')}</div><div class="feedback" id="feedback"></div><div class="quiz-actions"><button type="button" id="prev">\uc774\uc804</button><button type="button" id="next">\ub2e4\uc74c</button></div><p class="solved-state">${solved.has(question.id) ? '\ud480\uc774 \uc644\ub8cc' : '\ubbf8\ud480\uc774'}</p>`;
     }
     card.addEventListener('click', (event) => {
       const choice = event.target.closest('button[data-choice]');
@@ -64,7 +64,7 @@
         if (picked === question.answer) wrong.delete(question.id); else wrong.add(question.id);
         progress.wrongQuestions = [...wrong];
         save();
-        document.getElementById('feedback').innerHTML = picked === question.answer ? `<strong>?????.</strong><p>${question.explanation}</p>` : `<strong>?? ??????.</strong><p>${question.explanation}</p><p>${question.wrongExplanation}</p>`;
+        document.getElementById('feedback').innerHTML = picked === question.answer ? `<strong>\uc815\ub2f5\uc785\ub2c8\ub2e4.</strong><p>${question.explanation}</p>` : `<strong>\ub2e4\uc2dc \ud655\uc778\ud574\ubd05\uc2dc\ub2e4.</strong><p>${question.explanation}</p><p>${question.wrongExplanation}</p>`;
       }
       if (event.target.id === 'next') { index = (index + 1) % order.length; renderQuestion(); }
       if (event.target.id === 'prev') { index = (index - 1 + order.length) % order.length; renderQuestion(); }

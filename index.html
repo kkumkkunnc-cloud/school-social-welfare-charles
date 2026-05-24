@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="theme">?</button>
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="theme">&#9680;</button>
   <main class="site-shell">
     <section class="hero">
       <div>
@@ -33,7 +33,7 @@
   </main>
   <script src="data.js"></script>
   <script>
-    const labelOf = (lecture) => lecture.label || `${lecture.id}?`;
+    const labelOf = (lecture) => lecture.label || `${lecture.id}\uac15`;
     function applyTheme() {
       const theme = localStorage.getItem('theme') || 'light';
       document.documentElement.dataset.theme = theme;
@@ -51,7 +51,7 @@
     document.getElementById('solved-count').textContent = solved;
     document.getElementById('total-count').textContent = questions.length;
     document.getElementById('progress-fill').style.width = `${percent}%`;
-    document.getElementById('progress-message').textContent = solved ? `${questions.length}?? ? ${solved}??? ?????.` : '?? ?? ??? ????.';
+    document.getElementById('progress-message').textContent = solved ? `${questions.length}\ubb38\uc81c \uc911 ${solved}\ubb38\uc81c\ub97c \ud480\uc5c8\uc2b5\ub2c8\ub2e4.` : '\uc544\uc9c1 \ud480\uc774 \uae30\ub85d\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.';
     document.getElementById('lecture-strip').innerHTML = lectures.map((lecture) => `<article><strong>${labelOf(lecture)}</strong><span>${lecture.title}</span></article>`).join('');
   </script>
 </body>

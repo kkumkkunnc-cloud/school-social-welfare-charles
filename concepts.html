@@ -26,10 +26,10 @@
     const list = document.getElementById('concept-list');
     const search = document.getElementById('search');
     let active = lectures[0]?.id || 1;
-    const labelOf = (lecture) => lecture.label || `${lecture.id}?`;
+    const labelOf = (lecture) => lecture.label || `${lecture.id}\uac15`;
     function keywordsFor(sub) {
       const source = [sub.title, ...sub.points.slice(0, 2)].join(' ');
-      const words = source.split(/[\s,?/()]+/).map((word) => word.replace(/["'????.,!?]/g, '')).filter((word) => word.length >= 2);
+      const words = source.split(/[\s,./()]+/).map((word) => word.replace(/["'.,!]/g, '')).filter((word) => word.length >= 2);
       return [...new Set(words)].slice(0, 3);
     }
     function renderTabs() {

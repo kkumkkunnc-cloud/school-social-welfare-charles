@@ -23,10 +23,10 @@
   <script>
     const colors = d3.scaleOrdinal(d3.schemeTableau10.concat(d3.schemeSet3));
     const rootData = {
-      name: '???????',
+      name: '\ud559\uad50\uc0ac\ud68c\ubcf5\uc9c0\ub860',
       depthType: 'root',
       children: lectures.map((lecture, index) => ({
-        name: `${lecture.label || `${lecture.id}?`} ${lecture.title}`,
+        name: `${lecture.label || `${lecture.id}\uac15`} ${lecture.title}`,
         color: colors(index),
         children: lecture.sections.flatMap((section) => section.subtopics).slice(0, 3).map((subtopic) => ({ name: subtopic.title, color: colors(index) }))
       }))
