@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>&#47560;&#51064;&#46300;&#47605; | &#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200;</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="brand">&#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200;</a>
+    <nav><a href="quiz.html">&#47928;&#51228;&#54400;&#51060;</a><a href="concepts.html">&#44060;&#45392;&#51221;&#47532;</a><a href="mindmap.html" aria-current="page">&#47560;&#51064;&#46300;&#47605;</a></nav>
+  </header>
+  <main class="content-shell mindmap-shell">
+    <section class="page-heading compact">
+      <p class="eyebrow">Mind Map</p>
+      <h1>&#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200; &#47560;&#51064;&#46300;&#47605;</h1>
+    </section>
+    <section class="mindmap-panel"><svg id="mindmap" role="img" aria-label="school social welfare mindmap"></svg></section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="data.js"></script>
+  <script>
+    const colors = d3.scaleOrdinal(d3.schemeTableau10.concat(d3.schemeSet3));
+    const rootData = {
+      name: '???????',
+      depthType: 'root',
+      children: lectures.map((lecture, index) => ({
+        name: `${lecture.label || `${lecture.id}?`} ${lecture.title}`,
+        color: colors(index),
+        children: lecture.sections.flatMap((section) => section.subtopics).slice(0, 3).map((subtopic) => ({ name: subtopic.title, color: colors(index) }))
+      }))
+    };
+    const svg = d3.select('#mindmap');
+    const g = svg.append('g');
+    const linkLayer = g.append('g').attr('class', 'links');
+    const nodeLayer = g.append('g').attr('class', 'nodes');
+    let root;
+    function collapse(node) {
+      if (node.children) {
+        node._children = node.children;
+        node._children.forEach(collapse);
+        if (node.depth > 0) node.children = null;
+      }
+    }
+    function setup() {
+      const rect = svg.node().getBoundingClientRect();
+      const width = Math.max(320, rect.width || window.innerWidth - 24);
+      const height = Math.max(560, window.innerHeight - 180);
+      svg.attr('viewBox', [0, 0, width, height]);
+      root = d3.hierarchy(rootData);
+      root.x0 = height / 2;
+      root.y0 = 0;
+      root.children.forEach(collapse);
+      update(root);
+    }
+    function update(source) {
+      const rect = svg.node().getBoundingClientRect();
+      const width = Math.max(320, rect.width || window.innerWidth - 24);
+      const height = Math.max(560, window.innerHeight - 180);
+      const tree = d3.tree().nodeSize([42, Math.max(150, width / 4)]);
+      tree(root);
+      const nodes = root.descendants();
+      const links = root.links();
+      let left = root, right = root;
+      root.eachBefore((node) => { if (node.x < left.x) left = node; if (node.x > right.x) right = node; });
+      const mapHeight = Math.max(height, right.x - left.x + 120);
+      svg.attr('viewBox', [-90, left.x - 60, width, mapHeight]);
+      const link = linkLayer.selectAll('path').data(links, (d) => d.target.data.name);
+      link.join(
+        (enter) => enter.append('path').attr('d', () => d3.linkHorizontal().x(() => source.y0 || 0).y(() => source.x0 || 0)({source, target: source})),
+        (update) => update,
+        (exit) => exit.remove()
+      ).transition().duration(220).attr('d', d3.linkHorizontal().x((d) => d.y).y((d) => d.x));
+      const node = nodeLayer.selectAll('g').data(nodes, (d) => d.data.name);
+      const entered = node.enter().append('g').attr('transform', () => `translate(${source.y0 || 0},${source.x0 || 0})`).attr('class', 'mind-node').on('click', (_, d) => {
+        if (d.children) { d._children = d.children; d.children = null; }
+        else { d.children = d._children; d._children = null; }
+        update(d);
+      });
+      entered.append('circle').attr('r', 1e-6);
+      entered.append('text').attr('dy', '0.32em').attr('x', (d) => d.depth === 0 ? 0 : 14).attr('text-anchor', (d) => d.depth === 0 ? 'middle' : 'start').text((d) => d.data.name);
+      const merged = entered.merge(node);
+      merged.transition().duration(220).attr('transform', (d) => `translate(${d.y},${d.x})`);
+      merged.select('circle').transition().duration(220).attr('r', (d) => d.depth === 0 ? 11 : 8).attr('fill', (d) => d.data.color || '#2f6f73');
+      node.exit().remove();
+      root.eachBefore((d) => { d.x0 = d.x; d.y0 = d.y; });
+    }
+    setup();
+    window.addEventListener('resize', () => update(root));
+  </script>
+</body>
+</html>

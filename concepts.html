@@ -1,1 +1,64 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Concepts</title><link rel="stylesheet" href="style.css"></head><body><header class="topbar"><a href="index.html" class="brand">&#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200;</a><nav><a href="quiz.html">&#47928;&#51228;&#54400;&#51060;</a><a href="concepts.html" aria-current="page">&#44060;&#45392;&#51221;&#47532;</a></nav></header><main class="content-shell"><section class="page-heading"><p class="eyebrow">Concept Review</p><h1>&#44053;&#51032;&#48324; &#44060;&#45392;&#51221;&#47532;</h1><input id="search" class="search" type="search" placeholder="Search"></section><div class="lecture-tabs" id="lecture-tabs"></div><section class="concept-list" id="concept-list"></section></main><script src="data.js"></script><script>const tabs=document.getElementById('lecture-tabs'),list=document.getElementById('concept-list'),search=document.getElementById('search');let active=lectures[0]?.id||1;function renderTabs(){tabs.innerHTML=lectures.map(l=>`<button type="button" class="tab ${l.id===active?'is-active':''}" data-id="${l.id}">${l.id}?</button>`).join('')}function renderList(){const q=search.value.trim().toLowerCase(),lec=lectures.find(x=>x.id===active);if(!lec)return;const html=lec.sections.map(s=>{const subs=s.subtopics.filter(sub=>!q||[s.title,sub.title,...sub.points].join(' ').toLowerCase().includes(q));if(!subs.length)return'';return`<article class="concept-section"><h2>${s.title}</h2>${subs.map(sub=>`<div class="concept-card"><h3>${sub.id}. ${sub.title}</h3><ul>${sub.points.map(p=>`<li>${p}</li>`).join('')}</ul></div>`).join('')}</article>`}).join('');list.innerHTML=html||'<p class="empty">No results.</p>'}tabs.addEventListener('click',e=>{const b=e.target.closest('button[data-id]');if(!b)return;active=Number(b.dataset.id);renderTabs();renderList()});search.addEventListener('input',renderList);renderTabs();renderList();</script></body></html>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>&#44060;&#45392;&#51221;&#47532; | &#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200;</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="brand">&#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200;</a>
+    <nav><a href="quiz.html">&#47928;&#51228;&#54400;&#51060;</a><a href="concepts.html" aria-current="page">&#44060;&#45392;&#51221;&#47532;</a><a href="mindmap.html">&#47560;&#51064;&#46300;&#47605;</a></nav>
+  </header>
+  <main class="content-shell">
+    <section class="page-heading">
+      <p class="eyebrow">Concept Review</p>
+      <h1>&#44053;&#51032;&#48324; &#44060;&#45392;&#51221;&#47532;</h1>
+      <input id="search" class="search" type="search" placeholder="&#53412;&#50892;&#46300; &#44160;&#49353;" aria-label="concept search">
+    </section>
+    <div class="lecture-tabs" id="lecture-tabs"></div>
+    <section class="concept-list" id="concept-list"></section>
+  </main>
+  <script src="data.js"></script>
+  <script>
+    const tabs = document.getElementById('lecture-tabs');
+    const list = document.getElementById('concept-list');
+    const search = document.getElementById('search');
+    let active = lectures[0]?.id || 1;
+    const labelOf = (lecture) => lecture.label || `${lecture.id}?`;
+    function keywordsFor(sub) {
+      const source = [sub.title, ...sub.points.slice(0, 2)].join(' ');
+      const words = source.split(/[\s,?/()]+/).map((word) => word.replace(/["'????.,!?]/g, '')).filter((word) => word.length >= 2);
+      return [...new Set(words)].slice(0, 3);
+    }
+    function renderTabs() {
+      tabs.innerHTML = lectures.map((lecture) => `<button type="button" class="tab ${lecture.id === active ? 'is-active' : ''}" data-id="${lecture.id}">${labelOf(lecture)}</button>`).join('');
+    }
+    function renderList() {
+      const query = search.value.trim().toLowerCase();
+      const lecture = lectures.find((item) => item.id === active);
+      if (!lecture) return;
+      const sections = lecture.sections.map((section) => {
+        const subtopics = section.subtopics.filter((sub) => !query || [section.title, sub.title, ...sub.points].join(' ').toLowerCase().includes(query));
+        if (!subtopics.length) return '';
+        return `<article class="concept-section"><h2>${section.title}</h2>${subtopics.map((sub) => {
+          const keywords = keywordsFor(sub).map((word) => `<span>${word}</span>`).join('');
+          return `<details class="concept-card"><summary><span><strong>${sub.id}. ${sub.title}</strong><span class="keyword-row">${keywords}</span></span><em>? ??</em></summary><ul>${sub.points.map((point) => `<li>${point}</li>`).join('')}</ul></details>`;
+        }).join('')}</article>`;
+      }).join('');
+      list.innerHTML = sections || '<p class="empty">?? ??? ????.</p>';
+    }
+    tabs.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-id]');
+      if (!button) return;
+      active = Number(button.dataset.id);
+      renderTabs();
+      renderList();
+    });
+    search.addEventListener('input', renderList);
+    renderTabs();
+    renderList();
+  </script>
+</body>
+</html>

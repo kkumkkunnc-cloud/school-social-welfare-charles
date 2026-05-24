@@ -1,1 +1,58 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>&#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200; &#44592;&#47568;&#44256;&#49324; &#45824;&#48708;</title><link rel="stylesheet" href="style.css"></head><body><button class="theme-toggle" id="theme-toggle" type="button" aria-label="theme">?</button><main class="site-shell"><section class="hero"><div><p class="eyebrow">Final Exam Study Hub</p><h1>&#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200; &#44592;&#47568;&#44256;&#49324; &#45824;&#48708;</h1><p class="hero__lead">15 lectures, concepts, and practice questions.</p></div><section class="progress-panel"><div class="progress-panel__header"><span>Progress</span><strong><span id="solved-count">0</span> / <span id="total-count">0</span></strong></div><div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div><p id="progress-message">No practice history yet.</p></section></section><nav class="study-cards"><a class="study-card" href="quiz.html"><span class="study-card__icon">?</span><span class="study-card__body"><strong>&#47928;&#51228;&#54400;&#51060;</strong><span>Practice core concepts by lecture.</span></span></a><a class="study-card" href="concepts.html"><span class="study-card__icon">#</span><span class="study-card__body"><strong>&#44060;&#45392;&#51221;&#47532;</strong><span>Review all lecture notes and bullet points.</span></span></a></nav><section class="lecture-strip" id="lecture-strip"></section></main><script src="data.js"></script><script>function applyTheme(){const t=localStorage.getItem('theme')||'light';document.documentElement.dataset.theme=t}document.getElementById('theme-toggle').addEventListener('click',()=>{const n=document.documentElement.dataset.theme==='dark'?'light':'dark';localStorage.setItem('theme',n);applyTheme()});applyTheme();const progress=JSON.parse(localStorage.getItem('schoolQuizProgress')||'{"solvedQuestions":[]}');const solvedSet=new Set(Array.isArray(progress.solvedQuestions)?progress.solvedQuestions:[]);const solved=Math.min(questions.length,solvedSet.size);const percent=questions.length?Math.round(solved/questions.length*100):0;document.getElementById('solved-count').textContent=solved;document.getElementById('total-count').textContent=questions.length;document.getElementById('progress-fill').style.width=percent+'%';document.getElementById('progress-message').textContent=solved?`Solved ${solved} of ${questions.length}.`:'No practice history yet.';document.getElementById('lecture-strip').innerHTML=lectures.map(l=>`<article><strong>${l.id}?</strong><span>${l.title}</span></article>`).join('');</script></body></html>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>&#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200; &#44592;&#47568;&#44256;&#49324; &#45824;&#48708;</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="theme">?</button>
+  <main class="site-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Final Exam Study Hub</p>
+        <h1>&#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200; &#44592;&#47568;&#44256;&#49324; &#45824;&#48708;</h1>
+        <p class="hero__lead">15&#44053; &#54645;&#49900; &#44060;&#45392;&#51012; &#44053;&#51032;&#48324;&#47196; &#54805;&#49345;&#54868;&#54616;&#44256;, &#47928;&#51228;&#47196; &#48152;&#48373; &#51216;&#44160;&#54633;&#45768;&#45796;.</p>
+      </div>
+      <section class="progress-panel">
+        <div class="progress-panel__header">
+          <span>&#54617;&#49845; &#51652;&#46020;</span>
+          <strong><span id="solved-count">0</span> / <span id="total-count">0</span></strong>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+        <p id="progress-message">&#50500;&#51649; &#54400;&#51060; &#44592;&#47197;&#51060; &#50630;&#49845;&#45768;&#45796;.</p>
+      </section>
+    </section>
+    <nav class="study-cards three" aria-label="study menu">
+      <a class="study-card" href="quiz.html"><span class="study-card__icon">Q</span><span class="study-card__body"><strong>&#47928;&#51228;&#54400;&#51060;</strong><span>&#44053;&#51032;&#48324; &#54645;&#49900; &#51452;&#51228;&#50752; &#44060;&#45392; &#54869;&#51064; &#47928;&#51228;&#47484; &#54409;&#45768;&#45796;.</span></span></a>
+      <a class="study-card" href="concepts.html"><span class="study-card__icon">#</span><span class="study-card__body"><strong>&#44060;&#45392;&#51221;&#47532;</strong><span>&#49548;&#51452;&#51228;&#48324; &#54645;&#49900; &#53412;&#50892;&#46300;&#47484; &#47676;&#51200; &#54869;&#51064;&#54633;&#45768;&#45796;.</span></span></a>
+      <a class="study-card" href="mindmap.html"><span class="study-card__icon">&#128506;&#65039;</span><span class="study-card__body"><strong>&#47560;&#51064;&#46300;&#47605;</strong><span>&#44053;&#51032; &#44396;&#51312;&#47484; &#45432;&#46300;&#47196; &#54204;&#52432;&#49436; &#48389;&#45768;&#45796;.</span></span></a>
+    </nav>
+    <section class="lecture-strip" id="lecture-strip"></section>
+  </main>
+  <script src="data.js"></script>
+  <script>
+    const labelOf = (lecture) => lecture.label || `${lecture.id}?`;
+    function applyTheme() {
+      const theme = localStorage.getItem('theme') || 'light';
+      document.documentElement.dataset.theme = theme;
+    }
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('theme', next);
+      applyTheme();
+    });
+    applyTheme();
+    const progress = JSON.parse(localStorage.getItem('schoolQuizProgress') || '{"solvedQuestions":[]}');
+    const solvedSet = new Set(Array.isArray(progress.solvedQuestions) ? progress.solvedQuestions : []);
+    const solved = Math.min(questions.length, solvedSet.size);
+    const percent = questions.length ? Math.round(solved / questions.length * 100) : 0;
+    document.getElementById('solved-count').textContent = solved;
+    document.getElementById('total-count').textContent = questions.length;
+    document.getElementById('progress-fill').style.width = `${percent}%`;
+    document.getElementById('progress-message').textContent = solved ? `${questions.length}?? ? ${solved}??? ?????.` : '?? ?? ??? ????.';
+    document.getElementById('lecture-strip').innerHTML = lectures.map((lecture) => `<article><strong>${labelOf(lecture)}</strong><span>${lecture.title}</span></article>`).join('');
+  </script>
+</body>
+</html>

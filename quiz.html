@@ -1,1 +1,78 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Quiz</title><link rel="stylesheet" href="style.css"></head><body><header class="topbar"><a href="index.html" class="brand">&#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200;</a><nav><a href="quiz.html" aria-current="page">&#47928;&#51228;&#54400;&#51060;</a><a href="concepts.html">&#44060;&#45392;&#51221;&#47532;</a></nav></header><main class="content-shell quiz-shell"><section class="page-heading compact"><p class="eyebrow">Practice</p><h1>&#44592;&#47568;&#44256;&#49324; &#45824;&#48708; &#47928;&#51228;&#54400;&#51060;</h1></section><section class="quiz-tools"><label>Lecture <select id="lecture-filter"><option value="all">All</option></select></label><label>Mode <select id="mode"><option value="normal">Normal</option><option value="shuffle">Shuffle</option><option value="wrong">Wrong only</option></select></label><button type="button" id="reset-progress">Reset</button></section><section class="quiz-card" id="quiz-card"></section></main><script src="data.js"></script><script>const filter=document.getElementById('lecture-filter'),mode=document.getElementById('mode'),card=document.getElementById('quiz-card'),reset=document.getElementById('reset-progress');let index=0,order=[],progress=JSON.parse(localStorage.getItem('schoolQuizProgress')||'{"solvedQuestions":[],"wrongQuestions":[]}');const save=()=>localStorage.setItem('schoolQuizProgress',JSON.stringify(progress));lectures.forEach(l=>filter.insertAdjacentHTML('beforeend',`<option value="${l.id}">${l.id}? ${l.title}</option>`));function shuffled(items){return[...items].sort((a,b)=>((a.id*37)%101)-((b.id*37)%101))}function buildOrder(){let items=questions.filter(q=>filter.value==='all'||String(q.lecture)===filter.value);if(mode.value==='wrong'){const w=new Set(progress.wrongQuestions||[]);items=items.filter(q=>w.has(q.id))}order=mode.value==='shuffle'?shuffled(items):items;index=0;renderQuestion()}function renderQuestion(){if(!order.length){card.innerHTML='<p class="empty">No questions.</p>';return}const q=order[index],solved=new Set(progress.solvedQuestions||[]);card.innerHTML=`<div class="quiz-meta"><span>${q.lecture}?</span><span>${q.source}</span><span>${index+1} / ${order.length}</span></div><h2>${q.question}</h2><div class="options">${q.options.map((o,i)=>`<button type="button" data-choice="${i}">${o}</button>`).join('')}</div><div class="feedback" id="feedback"></div><div class="quiz-actions"><button type="button" id="prev">Prev</button><button type="button" id="next">Next</button></div><p class="solved-state">${solved.has(q.id)?'Solved':'Unsolved'}</p>`}card.addEventListener('click',e=>{const choice=e.target.closest('button[data-choice]');if(choice){const q=order[index],picked=Number(choice.dataset.choice),buttons=[...card.querySelectorAll('button[data-choice]')];buttons.forEach(b=>b.disabled=true);buttons[q.answer].classList.add('is-correct');if(picked!==q.answer)choice.classList.add('is-wrong');progress.solvedQuestions=[...new Set([...(progress.solvedQuestions||[]),q.id])];const wrong=new Set(progress.wrongQuestions||[]);if(picked===q.answer)wrong.delete(q.id);else wrong.add(q.id);progress.wrongQuestions=[...wrong];save();document.getElementById('feedback').innerHTML=picked===q.answer?`<strong>Correct.</strong><p>${q.explanation}</p>`:`<strong>Review this.</strong><p>${q.explanation}</p><p>${q.wrongExplanation}</p>`}if(e.target.id==='next'){index=(index+1)%order.length;renderQuestion()}if(e.target.id==='prev'){index=(index-1+order.length)%order.length;renderQuestion()}});reset.addEventListener('click',()=>{progress={solvedQuestions:[],wrongQuestions:[]};save();buildOrder()});filter.addEventListener('change',buildOrder);mode.addEventListener('change',buildOrder);buildOrder();</script></body></html>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>&#47928;&#51228;&#54400;&#51060; | &#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200;</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="brand">&#54617;&#44368;&#49324;&#54924;&#48373;&#51648;&#47200;</a>
+    <nav><a href="quiz.html" aria-current="page">&#47928;&#51228;&#54400;&#51060;</a><a href="concepts.html">&#44060;&#45392;&#51221;&#47532;</a><a href="mindmap.html">&#47560;&#51064;&#46300;&#47605;</a></nav>
+  </header>
+  <main class="content-shell quiz-shell">
+    <section class="page-heading compact"><p class="eyebrow">Practice</p><h1>&#44592;&#47568;&#44256;&#49324; &#45824;&#48708; &#47928;&#51228;&#54400;&#51060;</h1></section>
+    <section class="quiz-tools">
+      <label>&#44053;&#51032; <select id="lecture-filter"><option value="all">&#51204;&#52404;</option></select></label>
+      <label>&#49692;&#49436; <select id="mode"><option value="normal">&#44592;&#48376;</option><option value="shuffle">&#49438;&#44592;</option><option value="wrong">&#50724;&#45813;&#47564;</option></select></label>
+      <button type="button" id="reset-progress">&#51652;&#46020; &#52488;&#44592;&#54868;</button>
+    </section>
+    <section class="quiz-card" id="quiz-card"></section>
+  </main>
+  <script src="data.js"></script>
+  <script>
+    const filter = document.getElementById('lecture-filter');
+    const mode = document.getElementById('mode');
+    const card = document.getElementById('quiz-card');
+    const reset = document.getElementById('reset-progress');
+    const labelById = new Map(lectures.map((lecture) => [lecture.id, lecture.label || `${lecture.id}?`]));
+    let index = 0;
+    let order = [];
+    let progress = JSON.parse(localStorage.getItem('schoolQuizProgress') || '{"solvedQuestions":[],"wrongQuestions":[]}');
+    const save = () => localStorage.setItem('schoolQuizProgress', JSON.stringify(progress));
+    lectures.forEach((lecture) => filter.insertAdjacentHTML('beforeend', `<option value="${lecture.id}">${lecture.label || `${lecture.id}?`} ${lecture.title}</option>`));
+    function shuffled(items) { return [...items].sort((a, b) => ((a.id * 37) % 101) - ((b.id * 37) % 101)); }
+    function buildOrder() {
+      let items = questions.filter((question) => filter.value === 'all' || String(question.lecture) === filter.value);
+      if (mode.value === 'wrong') {
+        const wrong = new Set(progress.wrongQuestions || []);
+        items = items.filter((question) => wrong.has(question.id));
+      }
+      order = mode.value === 'shuffle' ? shuffled(items) : items;
+      index = 0;
+      renderQuestion();
+    }
+    function renderQuestion() {
+      if (!order.length) { card.innerHTML = '<p class="empty">??? ??? ????.</p>'; return; }
+      const question = order[index];
+      const solved = new Set(progress.solvedQuestions || []);
+      const lectureLabel = question.lectureLabel || labelById.get(question.lecture) || `${question.lecture}?`;
+      card.innerHTML = `<div class="quiz-meta"><span>${lectureLabel}</span><span>${question.source}</span><span>${index + 1} / ${order.length}</span></div><h2>${question.question}</h2><div class="options">${question.options.map((option, choiceIndex) => `<button type="button" data-choice="${choiceIndex}">${option}</button>`).join('')}</div><div class="feedback" id="feedback"></div><div class="quiz-actions"><button type="button" id="prev">??</button><button type="button" id="next">??</button></div><p class="solved-state">${solved.has(question.id) ? '?? ??' : '???'}</p>`;
+    }
+    card.addEventListener('click', (event) => {
+      const choice = event.target.closest('button[data-choice]');
+      if (choice) {
+        const question = order[index];
+        const picked = Number(choice.dataset.choice);
+        const buttons = [...card.querySelectorAll('button[data-choice]')];
+        buttons.forEach((button) => button.disabled = true);
+        buttons[question.answer].classList.add('is-correct');
+        if (picked !== question.answer) choice.classList.add('is-wrong');
+        progress.solvedQuestions = [...new Set([...(progress.solvedQuestions || []), question.id])];
+        const wrong = new Set(progress.wrongQuestions || []);
+        if (picked === question.answer) wrong.delete(question.id); else wrong.add(question.id);
+        progress.wrongQuestions = [...wrong];
+        save();
+        document.getElementById('feedback').innerHTML = picked === question.answer ? `<strong>?????.</strong><p>${question.explanation}</p>` : `<strong>?? ??????.</strong><p>${question.explanation}</p><p>${question.wrongExplanation}</p>`;
+      }
+      if (event.target.id === 'next') { index = (index + 1) % order.length; renderQuestion(); }
+      if (event.target.id === 'prev') { index = (index - 1 + order.length) % order.length; renderQuestion(); }
+    });
+    reset.addEventListener('click', () => { progress = { solvedQuestions: [], wrongQuestions: [] }; save(); buildOrder(); });
+    filter.addEventListener('change', buildOrder);
+    mode.addEventListener('change', buildOrder);
+    buildOrder();
+  </script>
+</body>
+</html>
